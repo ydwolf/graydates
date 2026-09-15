@@ -159,13 +159,13 @@
     '<svg class="logo" viewBox="0 0 64 64" fill="none" aria-hidden="true">' +
       /* head: two swept-back ears, angular jaw */
       '<path d="M32 60c-11 0-19-9-19-20l-1-8-6-18 15 9c3-2 7-3 11-3s8 1 11 3l15-9-6 18-1 8c0 11-8 20-19 20Z" ' +
-        'fill="#161d27" stroke="#5aa2ff" stroke-width="2.2" stroke-linejoin="round"/>' +
+        'fill="#151a18" stroke="#d9a441" stroke-width="2.2" stroke-linejoin="round"/>' +
       /* muzzle */
-      '<path d="M32 60c-4 0-7-3-8-7l8-4 8 4c-1 4-4 7-8 7Z" fill="#0d131b" stroke="#5aa2ff" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<path d="M32 60c-4 0-7-3-8-7l8-4 8 4c-1 4-4 7-8 7Z" fill="#0b0e0d" stroke="#d9a441" stroke-width="1.6" stroke-linejoin="round"/>' +
       /* eyes: angled slashes, not circles */
-      '<path d="M15 32l11 4-11 3zm34 0L38 36l11 3z" fill="#cfd8e3"/>' +
+      '<path d="M15 32l11 4-11 3zm34 0L38 36l11 3z" fill="#e8e6e1"/>' +
       /* nose */
-      '<path d="M32 49l-4-3h8z" fill="#cfd8e3"/>' +
+      '<path d="M32 49l-4-3h8z" fill="#e8e6e1"/>' +
     '</svg>';
 
   var PAW = '<span class="paw" aria-hidden="true">🐾</span>';
@@ -195,31 +195,37 @@
     GD.topics.forEach(function (t) {
       var s = store.topics[t.id];
       var pill = '<span class="pill">not started</span>';
-      var barOk = 0, barBad = 0, n = Math.min(ROUND, t.questions.length);
-      var footL = n + " questions", footR = "";
+      var n = Math.min(ROUND, t.questions.length);
+      var statText = n + " questions";
       if (s) {
         var r = tally(t, s);
-        barOk = r.ok / r.total * 100; barBad = r.bad / r.total * 100;
         if (s.done) {
           doneCount++;
-          pill = '<span class="pill done">completed ' + r.ok + "/" + r.total + "</span>";
-          footR = '<span class="best">score ' + Math.round(r.ok / r.total * 100) + "% · " + fmt(s.elapsed) + "</span>";
+          pill = '<span class="pill done">completed</span>';
+          statText = "<b>" + r.ok + "/" + r.total + "</b> · " + fmt(s.elapsed);
         } else if (r.answered > 0) {
-          pill = '<span class="pill progress">in progress ' + r.answered + "/" + r.total + "</span>";
-          footR = '<span class="best">resume at Q' + (s.cursor + 1) + "</span>";
+          pill = '<span class="pill progress">in progress</span>';
+          statText = "<b>" + r.answered + "/" + r.total + "</b> · Q" + (s.cursor + 1);
         }
+        if (s.best) statText = "<b>" + s.best.ok + "/" + s.best.total + "</b> · best";
       }
-      if (s && s.best && (!s.done || true)) {
-        footR = '<span class="best">best ' + s.best.ok + "/" + s.best.total + " · " + fmt(s.best.ms) + "</span>";
+      var ticks = "";
+      for (var k = 0; k < n; k++) {
+        var tk = "";
+        if (s && s.answers.hasOwnProperty(k)) {
+          tk = s.answers[k] === t.questions[s.order[k]].answer ? "ok" : "bad";
+        }
+        ticks += '<i class="' + tk + '"></i>';
       }
       cards +=
-        '<button class="card" data-go="' + t.id + '">' +
-          '<div class="card-top"><span class="sigil">' + esc(t.sigil) + "</span>" +
-            '<div><h3>' + esc(t.name) + "</h3><p class=\"blurb\">" + esc(t.blurb) + "</p></div></div>" +
-          '<div class="bar">' +
-            '<span class="s-ok" style="width:' + barOk + '%"></span>' +
-            '<span class="s-bad" style="width:' + barBad + '%"></span></div>' +
-          '<div class="card-foot">' + pill + (footR || "<span>" + footL + "</span>") + "</div>" +
+        '<button class="row-item" data-go="' + t.id + '">' +
+          '<span class="sigil">' + esc(t.sigil) + "</span>" +
+          '<span class="row-main">' +
+            '<span class="row-name">' + esc(t.name) + "</span>" +
+            '<span class="row-blurb">' + esc(t.blurb) + "</span></span>" +
+          '<span class="meter">' + ticks + "</span>" +
+          '<span class="row-stat">' + statText + "</span>" +
+          pill +
         "</button>";
     });
 
@@ -227,7 +233,7 @@
       head(GD.topics.length + " topics · " + ROUND + " questions per round · instant feedback") +
       '<div class="section-head"><h2>Pick a topic</h2><span class="overall">' +
         doneCount + " / " + GD.topics.length + " completed</span></div>" +
-      '<div class="grid">' + cards + "</div>" + foot();
+      '<div class="roster">' + cards + "</div>" + foot();
 
     app.querySelectorAll("[data-go]").forEach(function (b) {
       b.onclick = function () { location.hash = "#/t/" + b.getAttribute("data-go"); };
@@ -390,12 +396,12 @@
     var C = 2 * Math.PI * 62;
     var ring =
       '<svg class="ring" viewBox="0 0 150 150">' +
-      '<circle cx="75" cy="75" r="62" fill="none" stroke="#1d2833" stroke-width="11"/>' +
-      '<circle cx="75" cy="75" r="62" fill="none" stroke="' + (pct >= 70 ? "#3fb950" : pct >= 50 ? "#e3b341" : "#f4574c") +
+      '<circle cx="75" cy="75" r="62" fill="none" stroke="#222a27" stroke-width="11"/>' +
+      '<circle cx="75" cy="75" r="62" fill="none" stroke="' + (pct >= 70 ? "#8fb339" : pct >= 50 ? "#d9a441" : "#c65f3f") +
         '" stroke-width="11" stroke-linecap="round" stroke-dasharray="' + C + '" ' +
         'stroke-dashoffset="' + (C - C * pct / 100) + '" transform="rotate(-90 75 75)"/>' +
       '<text x="75" y="70" text-anchor="middle" font-size="30" font-weight="700">' + r.ok + "/" + r.total + "</text>" +
-      '<text x="75" y="93" text-anchor="middle" font-size="14" fill="#93a1b1">' + pct + "%</text></svg>";
+      '<text x="75" y="93" text-anchor="middle" font-size="14" fill="#9aa39e">' + pct + "%</text></svg>";
 
     var rows = "";
     for (var i = 0; i < s.order.length; i++) {
@@ -430,8 +436,8 @@
         '<p class="verdict">' + verdict + "</p>" +
         '<p class="verdict-sub">' + esc(topic.name) + " · " + r.total + " questions · " + fmt(s.elapsed) + "</p>" +
         '<div class="metrics">' +
-          '<div class="metric"><span class="v" style="color:#3fb950">' + r.ok + '</span><span class="k">right</span></div>' +
-          '<div class="metric"><span class="v" style="color:#f4574c">' + (r.total - r.ok) + '</span><span class="k">wrong</span></div>' +
+          '<div class="metric"><span class="v" style="color:#8fb339">' + r.ok + '</span><span class="k">right</span></div>' +
+          '<div class="metric"><span class="v" style="color:#c65f3f">' + (r.total - r.ok) + '</span><span class="k">wrong</span></div>' +
           '<div class="metric"><span class="v">' + fmt(s.elapsed) + '</span><span class="k">time</span></div>' +
           '<div class="metric"><span class="v">' + fmt(Math.round(s.elapsed / r.total)) + '</span><span class="k">per q</span></div>' +
           (s.best ? '<div class="metric"><span class="v">' + s.best.ok + "/" + s.best.total + '</span><span class="k">best</span></div>' : "") +
